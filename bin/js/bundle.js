@@ -21,22 +21,50 @@
     class GameUI extends ui.test.TestSceneUI {
         constructor() {
             super();
+            this.currentIndex = 0;
+            this.currentY = 0;
+            this.rotateNum = [-0.6, -1.6, -2.6];
+            this.touchStartX = 0;
             this.preloadRes();
         }
         preloadRes() {
-            var resource = ['res/LayaScene_0619_05_scene02/Conventional/5.ls'];
+            var resource = ['res/LayaScene_0702_01/Conventional/5.ls'];
             Laya.loader.create(resource, Laya.Handler.create(this, this.onPreLoadFinish), Laya.Handler.create(this, this.onProgress));
         }
         onProgress(p) { }
         onPreLoadFinish() {
-            this._scene = Laya.stage.addChild(Laya.Loader.getRes('res/LayaScene_0619_05_scene02/Conventional/5.ls'));
-            Laya.stage.setChildIndex(this._scene, 0);
-            var camera = this._scene.addChild(new Laya.Camera(0, 0.1, 100));
-            camera.transform.translate(new Laya.Vector3(0, 3, 3));
-            camera.transform.rotate(new Laya.Vector3(-30, 0, 0), true, false);
+            this._scene = Laya.stage.addChild(Laya.Loader.getRes('res/LayaScene_0702_01/Conventional/5.ls'));
+            this.camera = this._scene.getChildByName('Main Camera');
+            this.camera.transform.rotate(new Laya.Vector3(0, -0.6, 0));
+            this.currentY = -0.6;
+            Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.handleMouseDown);
+            Laya.stage.on(Laya.Event.MOUSE_UP, this, this.handleMouseUp);
+            console.log(this.camera);
             var directionLight = this._scene.addChild(new Laya.DirectionLight());
             directionLight.color = new Laya.Vector3(0.6, 0.6, 0.6);
             directionLight.transform.worldMatrix.setForward(new Laya.Vector3(1, -1, 0));
+        }
+        switchRotate(reverse) {
+            const index = this.currentIndex + (reverse ? -1 : 1);
+            if (index >= 0 && index <= 2) {
+                this.currentIndex = index;
+                const rotateY = this.rotateNum[index] - this.currentY;
+                this.currentY += rotateY;
+                this.camera.transform.rotate(new Laya.Vector3(0, rotateY, 0));
+            }
+        }
+        handleMouseDown() {
+            this.touchStartX = Laya.stage.mouseX;
+            console.log('this.touchStartX', this.touchStartX);
+        }
+        handleMousemove() {
+        }
+        handleMouseUp() {
+            const distance = Laya.stage.mouseX - this.touchStartX;
+            console.log({ distance });
+            if (Math.abs(distance) > 100) {
+                this.switchRotate(distance < 0);
+            }
         }
     }
 
