@@ -1,5 +1,4 @@
-import { ui } from './../ui/layaMaxUI'
-import CameraMoveScript from './CameraMoveScript'
+import { ui } from "./../ui/layaMaxUI";
 
 /**
  * 本示例采用非脚本的方式实现，而使用继承页面基类，实现页面逻辑。在IDE里面设置场景的Runtime属性即可和场景进行关联
@@ -7,134 +6,125 @@ import CameraMoveScript from './CameraMoveScript'
  * 建议：如果是页面级的逻辑，需要频繁访问页面内多个元素，使用继承式写法，如果是独立小模块，功能单一，建议用脚本方式实现，比如子弹脚本。
  */
 export default class GameUI extends ui.test.TestSceneUI {
-  private _scene: Laya.Scene3D
-  private camera: Laya.Camera
-  private currentIndex: number = 0
-  private currentRotateX: number = 0
+  private _scene: Laya.Scene3D;
+  private camera: Laya.Camera;
+  private currentIndex: number = 1;
+  private currentRotateX: number = 0;
 
-  rotateNum: number[] = [-0.6, -1.6, -2.6]
+  rotateNum: number[] = [-0.6, -1.6, -2.6];
 
-  touchStartX = 0
-  isTouch = false
-  lastMouseX = 0
+  mouseDownX = 0;
+  isMouseDown = false;
+  lastMouseX = 0;
+  mouseDownTime: number;
+
+  isMoving = false;
+  targetX = null;
+  isReverse = false;
+
+  progressLabel: Laya.Label;
 
   constructor() {
-    super()
+    super();
 
-    this.preloadRes()
+    Laya.MouseManager.multiTouchEnabled = false;
+    Laya3D.init(0, 0);
+    Laya.stage.scaleMode = Laya.Stage.SCALE_FULL;
+    Laya.stage.screenMode = Laya.Stage.SCREEN_HORIZONTAL;
 
-    Laya.MouseManager.multiTouchEnabled = false
-    Laya3D.init(0, 0)
-    Laya.stage.scaleMode = Laya.Stage.SCALE_FULL
-    Laya.stage.screenMode = Laya.Stage.SCREEN_HORIZONTAL
+    const [browserWidth, browserheight] = [
+      Laya.Browser.width,
+      Laya.Browser.height,
+    ].sort((a, b) => (a < b ? 1 : -1));
+
+    this.progressLabel = this.scene.getChildByName("progress") as Laya.Label;
+    this.progressLabel.pos(
+      browserWidth / 2 - this.progressLabel.width / 2,
+      browserheight / 2 - this.progressLabel.height / 2
+    );
+    this.preloadRes();
   }
 
   preloadRes() {
-    var resource = ['res/LayaScene_0702_01/Conventional/5.ls']
-    Laya.loader.create(resource, Laya.Handler.create(this, this.onPreLoadFinish), Laya.Handler.create(this, this.onProgress))
+    var resource = ["res/LayaScene_0702_01/Conventional/5.ls"];
+    Laya.loader.create(
+      resource,
+      Laya.Handler.create(this, () => setTimeout(() => this.onPreLoadFinish(), 500)),
+      Laya.Handler.create(this, this.onProgress)
+    );
   }
 
-  onProgress(p) {}
+  onProgress(p) {
+    this.progressLabel.text = Math.ceil(p * 100) + "%";
+  }
 
   onPreLoadFinish() {
     // 主场景
-    this._scene = Laya.stage.addChild(Laya.Loader.getRes('res/LayaScene_0702_01/Conventional/5.ls')) as Laya.Scene3D
+    this._scene = Laya.stage.addChild(
+      Laya.Loader.getRes("res/LayaScene_0702_01/Conventional/5.ls")
+    ) as Laya.Scene3D;
 
-    this.camera = this._scene.getChildByName('Main Camera') as Laya.Camera
-    // this.camera.addComponent(CameraMoveScript)
+    this.camera = this._scene.getChildByName("Main Camera") as Laya.Camera;
 
-    this.camera.transform.rotate(new Laya.Vector3(0, -0.6, 0))
-    this.currentRotateX = -0.6
+    const rotateX = this.rotateNum[this.currentRotateX]
+    this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0));
+    this.currentRotateX = rotateX;
 
-    // Laya.stage.on(Laya.Event.CLICK, this, () => {
-    //   const index = this.currentIndex + 1
-    //   if (index >=0 && index <= 2) {
-    //     this.currentIndex = index
-    //     const rotateX= this.rotateNum[index] - this.currentRotateX
-    //     this.currentRotateX += rotateX
-    //     this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0))
-    //   }
-    // })
+    Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.handleMouseDown);
+    Laya.stage.on(Laya.Event.MOUSE_UP, this, this.handleMouseUp);
 
-    // Laya.stage.on(Laya.Event.RIGHT_CLICK, this, () => {
-    //   const index = this.currentIndex - 1
-    //   if (index >=0 && index <= 2) {
-    //     this.currentIndex = index
-    //     const rotateX= this.rotateNum[index] - this.currentRotateX
-    //     this.currentRotateX += rotateX
-    //     this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0))
-    //   }
-    // })
-
-    Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.handleMouseDown)
-    // Laya.stage.on(Laya.Event.MOUSE_MOVE, this, this.handleMousemove)
-    Laya.stage.on(Laya.Event.MOUSE_UP, this, this.handleMouseUp)
-
-    let rotateX = 0
     Laya.timer.frameLoop(1, this, () => {
-      const elapsedTime:number = Laya.timer.delta;
-      if (this.isTouch && !isNaN(this.lastMouseX)) {
-        var offsetX:number = Laya.stage.mouseX - this.lastMouseX;
-        rotateX = offsetX * 0.00006 * elapsedTime;
-        const currentRotateX = this.currentRotateX + rotateX
-        if (currentRotateX < -0.6 && currentRotateX > -2.6) {
-          this.currentRotateX = currentRotateX
-          this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0))
+      if (this.isMouseDown && !isNaN(this.lastMouseX) && !this.isMoving) {
+        if (Math.abs(this.lastMouseX - this.mouseX) > 10) {
+          this.switchRotate(this.lastMouseX < this.mouseX);
+          this.handleMouseUp();
         }
       }
-      this.lastMouseX = Laya.stage.mouseX
-    })
+      this.lastMouseX = Laya.stage.mouseX;
 
+      if (this.isMoving && this.targetX) {
+        const rotateX = this.isReverse ? 0.02 : -0.02;
+        const currentRotateX = this.isReverse
+          ? Math.min(this.currentRotateX + rotateX, this.targetX)
+          : Math.max(this.currentRotateX + rotateX, this.targetX);
 
-    console.log(this.camera)
-    // Laya.stage.setChildIndex(this._scene, 0)
-
-    //添加照相机
-    // var camera: Laya.Camera = this._scene.addChild(new Laya.Camera(0, 0.1, 100)) as Laya.Camera
-    // camera.transform.translate(new Laya.Vector3(0, 3, 3))
-    // camera.transform.rotate(new Laya.Vector3(-30, 0, 0), true, false)
+        this.camera.transform.rotate(
+          new Laya.Vector3(0, currentRotateX - this.currentRotateX, 0)
+        );
+        this.currentRotateX = currentRotateX;
+        if (this.currentRotateX === this.targetX) {
+          this.isMoving = false;
+          this.targetX = null;
+        }
+      }
+    });
 
     //添加方向光
-    var directionLight: Laya.DirectionLight = this._scene.addChild(new Laya.DirectionLight()) as Laya.DirectionLight
-    directionLight.color = new Laya.Vector3(0.6, 0.6, 0.6)
-    directionLight.transform.worldMatrix.setForward(new Laya.Vector3(1, -1, 0))
+    const directionLight: Laya.DirectionLight = this._scene.addChild(
+      new Laya.DirectionLight()
+    ) as Laya.DirectionLight;
+    directionLight.color = new Laya.Vector3(0.6, 0.6, 0.6);
+    directionLight.transform.worldMatrix.setForward(new Laya.Vector3(1, -1, 0));
   }
 
   switchRotate(reverse) {
-    const index = this.currentIndex + (reverse ? -1 : 1)
+    this.isReverse = reverse;
+    const index = this.currentIndex + (reverse ? -1 : 1);
     if (index >= 0 && index <= 2) {
-      this.currentIndex = index
-      const rotateX = this.rotateNum[index] - this.currentRotateX
-      this.currentRotateX += rotateX
-
-      // Laya.Tween.to(this.camera.transform.rotate, new Laya.Vector3(0, rotateX, 0), 1000, Laya.Ease.backOut)
-
-      // this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0))
+      this.currentIndex = index;
+      this.isMoving = true;
+      this.targetX = this.rotateNum[index];
     }
   }
 
   handleMouseDown() {
-    this.isTouch = true
-    this.touchStartX = Laya.stage.mouseX
-    console.log('this.touchStartX', this.touchStartX)
-  }
-
-  handleMousemove() {
-    if (!this.isTouch) {
-      return
-    }
-    
-    const distance = Laya.stage.mouseX - this.touchStartX
-    console.log('move', Laya.stage.mouseX)
-    this.currentRotateX += distance * 0.0000006
-    this.camera.transform.rotate(new Laya.Vector3(0, this.currentRotateX, 0))
+    this.isMouseDown = true;
+    this.lastMouseX = Laya.stage.mouseX;
+    this.mouseDownX = Laya.stage.mouseX;
   }
 
   handleMouseUp() {
-    this.isTouch = false
-    // const distance = Laya.stage.mouseX - this.touchStartX
-    // if (Math.abs(distance) > 5) {
-    //   this.switchRotate(distance > 0)
-    // }
+    this.isMouseDown = false;
+    this.lastMouseX = null;
   }
 }

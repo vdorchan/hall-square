@@ -1,1 +1,1 @@
-{"type":"Scene","props":{"width":640,"runtime":"script/GameUI.ts","positionVariance_0":100,"maxPartices":100,"height":1136},"compId":1,"loadList":[],"loadList3D":[]}
+{"type":"Scene","props":{"width":640,"runtime":"script/GameUI.ts","positionVariance_0":100,"maxPartices":100,"height":1136},"compId":1,"child":[{"type":"Label","props":{"y":497,"x":291.09375,"text":"0%","name":"progress","fontSize":80,"color":"#ffffff"},"compId":21}],"loadList":[],"loadList3D":[]}
