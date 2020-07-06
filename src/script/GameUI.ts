@@ -10,16 +10,23 @@ export default class GameUI extends ui.test.TestSceneUI {
   private _scene: Laya.Scene3D
   private camera: Laya.Camera
   private currentIndex: number = 0
-  private currentY: number = 0
+  private currentRotateX: number = 0
 
   rotateNum: number[] = [-0.6, -1.6, -2.6]
 
   touchStartX = 0
+  isTouch = false
+  lastMouseX = 0
 
   constructor() {
     super()
 
     this.preloadRes()
+
+    Laya.MouseManager.multiTouchEnabled = false
+    Laya3D.init(0, 0)
+    Laya.stage.scaleMode = Laya.Stage.SCALE_FULL
+    Laya.stage.screenMode = Laya.Stage.SCREEN_HORIZONTAL
   }
 
   preloadRes() {
@@ -37,15 +44,15 @@ export default class GameUI extends ui.test.TestSceneUI {
     // this.camera.addComponent(CameraMoveScript)
 
     this.camera.transform.rotate(new Laya.Vector3(0, -0.6, 0))
-    this.currentY = -0.6
+    this.currentRotateX = -0.6
 
     // Laya.stage.on(Laya.Event.CLICK, this, () => {
     //   const index = this.currentIndex + 1
     //   if (index >=0 && index <= 2) {
     //     this.currentIndex = index
-    //     const rotateY= this.rotateNum[index] - this.currentY
-    //     this.currentY += rotateY
-    //     this.camera.transform.rotate(new Laya.Vector3(0, rotateY, 0))
+    //     const rotateX= this.rotateNum[index] - this.currentRotateX
+    //     this.currentRotateX += rotateX
+    //     this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0))
     //   }
     // })
 
@@ -53,14 +60,31 @@ export default class GameUI extends ui.test.TestSceneUI {
     //   const index = this.currentIndex - 1
     //   if (index >=0 && index <= 2) {
     //     this.currentIndex = index
-    //     const rotateY= this.rotateNum[index] - this.currentY
-    //     this.currentY += rotateY
-    //     this.camera.transform.rotate(new Laya.Vector3(0, rotateY, 0))
+    //     const rotateX= this.rotateNum[index] - this.currentRotateX
+    //     this.currentRotateX += rotateX
+    //     this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0))
     //   }
     // })
 
     Laya.stage.on(Laya.Event.MOUSE_DOWN, this, this.handleMouseDown)
+    // Laya.stage.on(Laya.Event.MOUSE_MOVE, this, this.handleMousemove)
     Laya.stage.on(Laya.Event.MOUSE_UP, this, this.handleMouseUp)
+
+    let rotateX = 0
+    Laya.timer.frameLoop(1, this, () => {
+      const elapsedTime:number = Laya.timer.delta;
+      if (this.isTouch && !isNaN(this.lastMouseX)) {
+        var offsetX:number = Laya.stage.mouseX - this.lastMouseX;
+        rotateX = offsetX * 0.00006 * elapsedTime;
+        const currentRotateX = this.currentRotateX + rotateX
+        if (currentRotateX < -0.6 && currentRotateX > -2.6) {
+          this.currentRotateX = currentRotateX
+          this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0))
+        }
+      }
+      this.lastMouseX = Laya.stage.mouseX
+    })
+
 
     console.log(this.camera)
     // Laya.stage.setChildIndex(this._scene, 0)
@@ -78,27 +102,39 @@ export default class GameUI extends ui.test.TestSceneUI {
 
   switchRotate(reverse) {
     const index = this.currentIndex + (reverse ? -1 : 1)
-    if (index >=0 && index <= 2) {
+    if (index >= 0 && index <= 2) {
       this.currentIndex = index
-      const rotateY= this.rotateNum[index] - this.currentY
-      this.currentY += rotateY
-      this.camera.transform.rotate(new Laya.Vector3(0, rotateY, 0))
+      const rotateX = this.rotateNum[index] - this.currentRotateX
+      this.currentRotateX += rotateX
+
+      // Laya.Tween.to(this.camera.transform.rotate, new Laya.Vector3(0, rotateX, 0), 1000, Laya.Ease.backOut)
+
+      // this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0))
     }
   }
 
   handleMouseDown() {
+    this.isTouch = true
     this.touchStartX = Laya.stage.mouseX
     console.log('this.touchStartX', this.touchStartX)
   }
 
   handleMousemove() {
-
+    if (!this.isTouch) {
+      return
+    }
+    
+    const distance = Laya.stage.mouseX - this.touchStartX
+    console.log('move', Laya.stage.mouseX)
+    this.currentRotateX += distance * 0.0000006
+    this.camera.transform.rotate(new Laya.Vector3(0, this.currentRotateX, 0))
   }
 
   handleMouseUp() {
-    const distance = Laya.stage.mouseX - this.touchStartX
-    if (Math.abs(distance) > 100) {
-      this.switchRotate(distance < 0)
-    }
+    this.isTouch = false
+    // const distance = Laya.stage.mouseX - this.touchStartX
+    // if (Math.abs(distance) > 5) {
+    //   this.switchRotate(distance > 0)
+    // }
   }
 }
