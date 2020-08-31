@@ -21,7 +21,7 @@
     class GameUI extends ui.test.TestSceneUI {
         constructor() {
             super();
-            this.currentIndex = 1;
+            this.currentIndex = 0;
             this.currentRotateX = 0;
             this.rotateNum = [-0.6, -1.6, -2.6];
             this.mouseDownX = 0;
@@ -30,28 +30,29 @@
             this.isMoving = false;
             this.targetX = null;
             this.isReverse = false;
+            this.point = new Laya.Vector2();
             Laya.MouseManager.multiTouchEnabled = false;
             Laya3D.init(0, 0);
             Laya.stage.scaleMode = Laya.Stage.SCALE_FULL;
             Laya.stage.screenMode = Laya.Stage.SCREEN_HORIZONTAL;
-            const [browserWidth, browserheight] = [
-                Laya.Browser.width,
-                Laya.Browser.height,
-            ].sort((a, b) => (a < b ? 1 : -1));
-            this.progressLabel = this.scene.getChildByName("progress");
+            this._ray = new Laya.Ray(new Laya.Vector3(0, 0, 0), new Laya.Vector3(0, 0, 0));
+            this.point = new Laya.Vector2();
+            this._outHitResult = new Laya.HitResult();
+            const [browserWidth, browserheight] = [Laya.Browser.width, Laya.Browser.height].sort((a, b) => (a < b ? 1 : -1));
+            this.progressLabel = this.scene.getChildByName('progress');
             this.progressLabel.pos(browserWidth / 2 - this.progressLabel.width / 2, browserheight / 2 - this.progressLabel.height / 2);
             this.preloadRes();
         }
         preloadRes() {
-            var resource = ["res/LayaScene_0702_01/Conventional/5.ls"];
+            var resource = ['res/LayaScene_0702_01/Conventional/5.ls'];
             Laya.loader.create(resource, Laya.Handler.create(this, () => setTimeout(() => this.onPreLoadFinish(), 500)), Laya.Handler.create(this, this.onProgress));
         }
         onProgress(p) {
-            this.progressLabel.text = Math.ceil(p * 100) + "%";
+            this.progressLabel.text = Math.ceil(p * 100) + '%';
         }
         onPreLoadFinish() {
-            this._scene = Laya.stage.addChild(Laya.Loader.getRes("res/LayaScene_0702_01/Conventional/5.ls"));
-            this.camera = this._scene.getChildByName("Main Camera");
+            this._scene = Laya.stage.addChild(Laya.Loader.getRes('res/LayaScene_0702_01/Conventional/5.ls'));
+            this.camera = this._scene.getChildByName('Main Camera');
             const rotateX = this.rotateNum[this.currentRotateX];
             this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0));
             this.currentRotateX = rotateX;
@@ -67,9 +68,7 @@
                 this.lastMouseX = Laya.stage.mouseX;
                 if (this.isMoving && this.targetX) {
                     const rotateX = this.isReverse ? 0.02 : -0.02;
-                    const currentRotateX = this.isReverse
-                        ? Math.min(this.currentRotateX + rotateX, this.targetX)
-                        : Math.max(this.currentRotateX + rotateX, this.targetX);
+                    const currentRotateX = this.isReverse ? Math.min(this.currentRotateX + rotateX, this.targetX) : Math.max(this.currentRotateX + rotateX, this.targetX);
                     this.camera.transform.rotate(new Laya.Vector3(0, currentRotateX - this.currentRotateX, 0));
                     this.currentRotateX = currentRotateX;
                     if (this.currentRotateX === this.targetX) {
@@ -95,8 +94,20 @@
             this.isMouseDown = true;
             this.lastMouseX = Laya.stage.mouseX;
             this.mouseDownX = Laya.stage.mouseX;
+            this.point.x = Laya.MouseManager.instance.mouseX;
+            this.point.y = Laya.MouseManager.instance.mouseY;
+            this.camera.viewportPointToRay(this.point, this._ray);
+            this._scene.physicsSimulation.rayCast(this._ray, this._outHitResult);
+            if (this._outHitResult.succeeded) {
+                this.buildingIsMouseDown = true;
+            }
         }
         handleMouseUp() {
+            if (this.buildingIsMouseDown && !this.isMoving) {
+                const buildingName = this._outHitResult.collider.owner.name.match(/\d$/g)[0];
+                alert(`点击了展馆${buildingName}`);
+            }
+            this.buildingIsMouseDown = false;
             this.isMouseDown = false;
             this.lastMouseX = null;
         }
