@@ -9,7 +9,7 @@ export default class GameUI extends ui.test.TestSceneUI {
   private _scene: Laya.Scene3D
   private camera: Laya.Camera
   private currentIndex: number = 0
-  private currentRotateX: number = 0
+  private currentRotateX: number = 1
 
   rotateNum: number[] = [-0.6, -1.6, -2.6]
 

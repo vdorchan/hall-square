@@ -22,7 +22,7 @@
         constructor() {
             super();
             this.currentIndex = 0;
-            this.currentRotateX = 0;
+            this.currentRotateX = 1;
             this.rotateNum = [-0.6, -1.6, -2.6];
             this.mouseDownX = 0;
             this.isMouseDown = false;
