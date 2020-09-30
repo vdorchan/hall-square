@@ -8,10 +8,10 @@ import { ui } from './../ui/layaMaxUI'
 export default class GameUI extends ui.test.TestSceneUI {
   private _scene: Laya.Scene3D
   private camera: Laya.Camera
-  private currentIndex: number = 0
+  private currentIndex: number = 1
   private currentRotateX: number = 1
 
-  rotateNum: number[] = [-0.6, -1.6, -2.6]
+  rotateNum: number[] = [1, 0, -1]
 
   mouseDownX = 0
   isMouseDown = false
@@ -53,7 +53,7 @@ export default class GameUI extends ui.test.TestSceneUI {
   }
 
   preloadRes() {
-    var resource = ['res/LayaScene_0702_01/Conventional/5.ls']
+    var resource = ['res/LayaScene_waiguan_0929_1/Conventional/6.ls']
     Laya.loader.create(
       resource,
       Laya.Handler.create(this, () => setTimeout(() => this.onPreLoadFinish(), 500)),
@@ -67,7 +67,7 @@ export default class GameUI extends ui.test.TestSceneUI {
 
   onPreLoadFinish() {
     // 主场景
-    this._scene = Laya.stage.addChild(Laya.Loader.getRes('res/LayaScene_0702_01/Conventional/5.ls')) as Laya.Scene3D
+    this._scene = Laya.stage.addChild(Laya.Loader.getRes('res/LayaScene_waiguan_0929_1/Conventional/6.ls')) as Laya.Scene3D
 
     this.camera = this._scene.getChildByName('Main Camera') as Laya.Camera
 
@@ -94,7 +94,7 @@ export default class GameUI extends ui.test.TestSceneUI {
       }
       this.lastMouseX = Laya.stage.mouseX
 
-      if (this.isMoving && this.targetX) {
+      if (this.isMoving && typeof this.targetX !== 'undefined') {
         const rotateX = this.isReverse ? 0.02 : -0.02
         const currentRotateX = this.isReverse ? Math.min(this.currentRotateX + rotateX, this.targetX) : Math.max(this.currentRotateX + rotateX, this.targetX)
 

@@ -3,7 +3,7 @@
 	"data":{
 		"type":"Scene3D",
 		"props":{
-			"name":"5",
+			"name":"6",
 			"sky":{
 				"material":{
 					"type":"Laya.SkyBoxMaterial",
@@ -17,7 +17,7 @@
 				1
 			],
 			"reflectionDecodingFormat":1,
-			"reflection":"Assets/5GIReflection.ltcb",
+			"reflection":"Assets/6GIReflection.ltcb",
 			"reflectionIntensity":1,
 			"ambientMode":0,
 			"ambientSphericalHarmonicsIntensity":1,
@@ -47,9 +47,9 @@
 					],
 					"rotation":[
 						0,
-						1,
+						0.7119357,
 						0,
-						0
+						0.7022447
 					],
 					"scale":[
 						1,
@@ -88,9 +88,9 @@
 					"isStatic":false,
 					"layer":0,
 					"position":[
-						-14.72,
-						3.55,
-						-19.29
+						-19.99,
+						-0.97,
+						-19.41
 					],
 					"rotation":[
 						0,
@@ -101,7 +101,7 @@
 					"scale":[
 						1,
 						8.945963,
-						23.06627
+						36.92909
 					],
 					"meshPath":"Library/unity default resources-Cube.lm",
 					"enableRender":true,
@@ -147,8 +147,8 @@
 					"layer":0,
 					"position":[
 						-22.15,
-						3.55,
-						-0.44
+						0.55,
+						-0.7
 					],
 					"rotation":[
 						0,
@@ -159,7 +159,7 @@
 					"scale":[
 						1,
 						8.945963,
-						23.06627
+						18.72151
 					],
 					"meshPath":"Library/unity default resources-Cube.lm",
 					"enableRender":true,
@@ -205,7 +205,7 @@
 					"layer":0,
 					"position":[
 						-21.05,
-						3.55,
+						-0.61,
 						21.76
 					],
 					"rotation":[
@@ -215,8 +215,8 @@
 						-1
 					],
 					"scale":[
-						31.8754,
-						8.945963,
+						52.56572,
+						13.19887,
 						2.382976
 					],
 					"meshPath":"Library/unity default resources-Cube.lm",

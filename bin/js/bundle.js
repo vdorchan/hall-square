@@ -21,9 +21,9 @@
     class GameUI extends ui.test.TestSceneUI {
         constructor() {
             super();
-            this.currentIndex = 0;
+            this.currentIndex = 1;
             this.currentRotateX = 1;
-            this.rotateNum = [-0.6, -1.6, -2.6];
+            this.rotateNum = [1, 0, -1];
             this.mouseDownX = 0;
             this.isMouseDown = false;
             this.lastMouseX = 0;
@@ -44,14 +44,14 @@
             this.preloadRes();
         }
         preloadRes() {
-            var resource = ['res/LayaScene_0702_01/Conventional/5.ls'];
+            var resource = ['res/LayaScene_waiguan_0929_1/Conventional/6.ls'];
             Laya.loader.create(resource, Laya.Handler.create(this, () => setTimeout(() => this.onPreLoadFinish(), 500)), Laya.Handler.create(this, this.onProgress));
         }
         onProgress(p) {
             this.progressLabel.text = Math.ceil(p * 100) + '%';
         }
         onPreLoadFinish() {
-            this._scene = Laya.stage.addChild(Laya.Loader.getRes('res/LayaScene_0702_01/Conventional/5.ls'));
+            this._scene = Laya.stage.addChild(Laya.Loader.getRes('res/LayaScene_waiguan_0929_1/Conventional/6.ls'));
             this.camera = this._scene.getChildByName('Main Camera');
             const rotateX = this.rotateNum[this.currentRotateX];
             this.camera.transform.rotate(new Laya.Vector3(0, rotateX, 0));
@@ -66,7 +66,7 @@
                     }
                 }
                 this.lastMouseX = Laya.stage.mouseX;
-                if (this.isMoving && this.targetX) {
+                if (this.isMoving && typeof this.targetX !== 'undefined') {
                     const rotateX = this.isReverse ? 0.02 : -0.02;
                     const currentRotateX = this.isReverse ? Math.min(this.currentRotateX + rotateX, this.targetX) : Math.max(this.currentRotateX + rotateX, this.targetX);
                     this.camera.transform.rotate(new Laya.Vector3(0, currentRotateX - this.currentRotateX, 0));
@@ -82,6 +82,7 @@
             directionLight.transform.worldMatrix.setForward(new Laya.Vector3(1, -1, 0));
         }
         switchRotate(reverse) {
+            console.log(this.currentIndex);
             this.isReverse = reverse;
             const index = this.currentIndex + (reverse ? -1 : 1);
             if (index >= 0 && index <= 2) {
@@ -91,6 +92,7 @@
             }
         }
         handleMouseDown() {
+            console.log(123);
             this.isMouseDown = true;
             this.lastMouseX = Laya.stage.mouseX;
             this.mouseDownX = Laya.stage.mouseX;
